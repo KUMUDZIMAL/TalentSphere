@@ -1,59 +1,48 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+// app/models/UserProfile.ts
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
-    userId: Schema.Types.ObjectId;
-    username: string;
+  userId: mongoose.Types.ObjectId;
+
   profilePicture?: string;
-  posts: mongoose.Types.ObjectId[]; // Array of post IDs
-  followers: mongoose.Types.ObjectId[]; // Array of userProfile IDs who follow this userProfile
-  following: mongoose.Types.ObjectId[]; // Array of userProfile IDs this userProfile follows
-  interests: string[]; // Array of interests/tags
+  posts: mongoose.Types.ObjectId[];
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
+  interests: string[];
+  professions: string[];
+  skills: string[];
+  experiences: {
+    title: string;
+    description: string;
+  }[];
+  about: string;
   createdAt: Date;
   updatedAt: Date;
-
-
 }
 
 const UserSchema: Schema<IUser> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    username: { type: String, ref: "User", required: true },
-    profilePicture: {
-        type: String,
-        default: '', // Default to an empty string if no profile picture is set
+  
+    profilePicture: { type: String, default: "" },
+    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    interests: [{ type: String, trim: true }],
+    professions: [{ type: String, trim: true }],
+    skills: [{ type: String, trim: true }],
+    experiences: [
+      {
+        title: { type: String, required: true },
+        description: { type: String, required: true },
       },
-      posts: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'Post', // Reference to the Post model
-        },
-      ],
-      followers: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'User', // Reference to the userProfile model (self-reference)
-        },
-      ],
-      following: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'User', // Reference to the userProfile model (self-reference)
-        },
-      ],
-      interests: [
-        {
-          type: String,
-          trim: true,
-        },
-      ],
-    },
-    {
-      timestamps: true, // Automatically add `createdAt` and `updatedAt` fields
-    }
-      
-
+    ],
+    about: { type: String, default: "" },
+  },
+  { timestamps: true }
 );
 
-const userProfile: Model<IUser> = mongoose.models.userProfile || mongoose.model<IUser>('userProfile', UserSchema);
+const UserProfileModel =
+  mongoose.models.UserProfile || mongoose.model<IUser>("UserProfile", UserSchema);
 
-export default userProfile;
+export default UserProfileModel;

@@ -23,9 +23,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50">
+<<<<<<< HEAD
       <Header />
       {userId ? ( // Render Profile only when userId is not null
         <Profile userId={userId} />
+=======
+     
+      {userId ? ( // Render Profile only when userId is not null
+      <>
+       <Header userId={userId}/>
+        <Profile userId={userId} />
+        </>
+>>>>>>> 33aff6e (done)
       ) : (
         <p>Loading...</p>
       )}

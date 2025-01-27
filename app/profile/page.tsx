@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -5,9 +8,36 @@ import { Header } from "../../myComponents/header"
 import Link from "next/link"
 
 export default function ProfilePage() {
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
+    useEffect(() => {
+      const fetchUserId = async () => {
+        try {
+          const response = await fetch('/api/auth/user');
+          const data = await response.json();
+          setUserId(data.userId); 
+          setUsername(data.username); // Set the userId state
+        } catch (error) {
+          console.error('Failed to fetch user ID:', error);
+        }
+      };
+  
+      fetchUserId();
+    }, []);
+      useEffect(() => {
+          const fetchProfilePicture = async () => {
+            const response = await fetch(`/api/auth/userprofile`);
+            const data = await response.json();
+            console.log(data.exists)
+            setProfilePicture(data.profilePicture);
+          };
+      
+          fetchProfilePicture();''
+        }, [userId]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50">
-      <Header />
+      <Header/>
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-3xl mx-auto">
           <CardHeader className="pb-2">
@@ -19,13 +49,13 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="relative pt-16">
             <img
-              src="/placeholder.svg?height=128&width=128"
+              src={profilePicture?profilePicture:'../noDpImage.jpg'}
               alt="User avatar"
               className="w-32 h-32 rounded-full absolute -top-16 left-6 border-4 border-white"
             />
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-3xl font-bold">Emma Thompson</h1>
+                <h1 className="text-3xl font-bold">{username}</h1>
                 <p className="text-lg text-gray-600">Actress | Singer | Dancer</p>
               </div>
               <Button>Edit Profile</Button>
