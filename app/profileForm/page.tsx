@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { X } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
 
 const professions = [
   "Actor",
@@ -26,18 +26,18 @@ const professions = [
   "Animator",
   "Music Composer",
   "Photographer",
-]
+];
 
 interface Experience {
-  title: string
-  description: string
+  title: string;
+  description: string;
 }
 
 interface FormData {
-  professions: string[]
-  skills: string[]
-  experiences: Experience[]
-  about: string
+  professions: string[];
+  skills: string[];
+  experiences: Experience[];
+  about: string;
 }
 
 export default function ProfileForm() {
@@ -46,9 +46,25 @@ export default function ProfileForm() {
     skills: [],
     experiences: [],
     about: "",
-  })
-  const [newSkill, setNewSkill] = useState("")
-  const [newExperience, setNewExperience] = useState<Experience>({ title: "", description: "" })
+  });
+  const [newSkill, setNewSkill] = useState("");
+  const [newExperience, setNewExperience] = useState<Experience>({ title: "", description: "" });
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch userId when the component mounts
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const response = await fetch("/api/auth/user");
+        const data = await response.json();
+        setUserId(data._id); // Set the userId state
+      } catch (error) {
+        console.error("Failed to fetch user ID:", error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
 
   const handleProfessionChange = (profession: string) => {
     setFormData((prev) => ({
@@ -56,52 +72,69 @@ export default function ProfileForm() {
       professions: prev.professions.includes(profession)
         ? prev.professions.filter((p) => p !== profession)
         : [...prev.professions, profession],
-    }))
-  }
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAddSkill = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData((prev) => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }))
-      setNewSkill("")
+      setFormData((prev) => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }));
+      setNewSkill("");
     }
-  }
+  };
 
   const handleRemoveSkill = (skillToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
       skills: prev.skills.filter((skill) => skill !== skillToRemove),
-    }))
-  }
+    }));
+  };
 
   const handleAddExperience = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (newExperience.title.trim() && newExperience.description.trim()) {
       setFormData((prev) => ({
         ...prev,
         experiences: [...prev.experiences, { ...newExperience }],
-      }))
-      setNewExperience({ title: "", description: "" })
+      }));
+      setNewExperience({ title: "", description: "" });
     }
-  }
+  };
 
   const handleRemoveExperience = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       experiences: prev.experiences.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form data:", formData)
-    // Here you would typically send the data to your backend
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    console.log("Form Data being submitted:", formData); // Debug log
+
+    const response = await fetch("/api/user-profile", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userId,
+        professions: formData.professions,
+        skills: formData.skills,
+        experiences: formData.experiences,
+        about: formData.about,
+      }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#10A881] via-[#1BCA9B] via-[#53E0BC] via-[#75DA8B] to-[#7CEC9F] flex items-center justify-center p-4">
@@ -113,6 +146,7 @@ export default function ProfileForm() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Professions Section */}
             <div>
               <h3 className="text-lg font-semibold mb-2">Professions</h3>
               <ScrollArea className="h-[200px] pr-4 border rounded-md p-4">
@@ -124,10 +158,7 @@ export default function ProfileForm() {
                         checked={formData.professions.includes(profession)}
                         onCheckedChange={() => handleProfessionChange(profession)}
                       />
-                      <Label
-                        htmlFor={profession}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
+                      <Label htmlFor={profession} className="text-sm font-medium leading-none">
                         {profession}
                       </Label>
                     </div>
@@ -135,6 +166,8 @@ export default function ProfileForm() {
                 </div>
               </ScrollArea>
             </div>
+
+            {/* Skills Section */}
             <div>
               <Label htmlFor="skills" className="text-lg font-semibold">
                 Skills
@@ -173,6 +206,8 @@ export default function ProfileForm() {
                 ))}
               </div>
             </div>
+
+            {/* Experiences Section */}
             <div>
               <Label htmlFor="experiences" className="text-lg font-semibold">
                 Experiences
@@ -216,6 +251,8 @@ export default function ProfileForm() {
                 ))}
               </div>
             </div>
+
+            {/* About Section */}
             <div>
               <Label htmlFor="about" className="text-lg font-semibold">
                 About You
@@ -242,6 +279,5 @@ export default function ProfileForm() {
         </form>
       </Card>
     </div>
-  )
+  );
 }
-

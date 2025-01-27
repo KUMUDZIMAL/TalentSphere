@@ -1,9 +1,41 @@
+"use client";
 import Link from "next/link"
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Bell, Home, Search, Users, Video, Music, Theater } from "lucide-react"
 
-export function Header() {
+export function Header( {userId }: { userId: string }) {
+  const router = useRouter();
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+
+  useEffect(() => {
+      const fetchProfilePicture = async () => {
+        const response = await fetch(`/api/auth/userprofile`);
+        const data = await response.json();
+        console.log(data.exists)
+        setProfilePicture(data.profilePicture);
+      };
+  
+      fetchProfilePicture();''
+    }, [userId]);
+    const [username, setUsername] = useState<string | null>(null); // Allow userId to be null initially
+
+    // Fetch userId when the component mounts
+    useEffect(() => {
+      const fetchUserId = async () => {
+        try {
+          const response = await fetch('/api/auth/user');
+          const data = await response.json();
+          setUsername(data.username); // Set the userId state
+        } catch (error) {
+          console.error('Failed to fetch user ID:', error);
+        }
+      };
+  
+      fetchUserId();
+    }, []);
   return (
     <header className="bg-gradient-to-r from-[#218F76] via-[#10A881] via-[#1BCA9B] via-[#25CCF7] via-[#53E0BC] via-[#75DA8B] to-[#7CEC9F] shadow">
       <div className="container mx-auto px-4">
@@ -24,7 +56,9 @@ export function Header() {
           <nav className="hidden md:flex space-x-4">
   {[
     { icon: Home, label: "Home" },
-    { icon: Users, label: "Network" },
+    { icon: Users, label: "Network" ,onclick:()=>{
+      router.push('/network')
+    }},
     { icon: Video, label: "Videos" },
     { icon: Music, label: "Music" },
     { icon: Theater, label: "Events" },
@@ -32,6 +66,7 @@ export function Header() {
   ].map((item, index) => (
     <Button
       key={index}
+      onClick={item.onclick}
       variant="ghost"
       size="icon"
       className="text-white hover:bg-white/10 hover:text-white transition-colors duration-300"
@@ -49,9 +84,9 @@ export function Header() {
                 size="icon"
                 className="bg-white/10 hover:bg-white/20 transition-colors duration-300"
               >
-                <img src="../noDpImage.jpg" alt="User avatar" className="w-8 h-8 rounded-full" />
+                <img src={profilePicture?profilePicture:'../noDpImage.jpg'}alt="User avatar" className="w-8 h-8 rounded-full" />
               </Button>
-              <span className="text-white font-medium">User</span>
+              <span className="text-white font-medium">{username?username:'<p>User</p>'}</span>
             </Link>
           </div>
         </div>
