@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
   userId: mongoose.Types.ObjectId;
-
+  
   profilePicture?: string;
   posts: mongoose.Types.ObjectId[];
   followers: mongoose.Types.ObjectId[];
@@ -23,7 +23,7 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  
+   
     profilePicture: { type: String, default: "" },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
