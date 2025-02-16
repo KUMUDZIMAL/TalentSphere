@@ -6,9 +6,11 @@ export interface IPost extends Document {
   content: string;
   caption: string; // Caption for the post
   author: mongoose.Types.ObjectId; // Reference to the User model
+  media: string[]; // Array of media URLs or file paths
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 // Define the Post schema
 const postSchema: Schema = new Schema(
@@ -27,18 +29,26 @@ const postSchema: Schema = new Schema(
     caption: {
       type: String,
       trim: true,
-      default: '', // Default to an empty string if no caption is provided
+      default: '',
     },
     author: {
       type: Schema.Types.ObjectId,
-      ref: 'User', // Reference to the User model
+      ref: 'User',
       required: true,
     },
+    media: [
+      {
+        type: String, // URL or path to the media file
+        trim: true,
+        required:false,
+      },
+    ], // Add media field
   },
   {
-    timestamps: true, // Automatically add `createdAt` and `updatedAt` fields
+    timestamps: true,
   }
 );
+
 
 // Create the Post model
 const Post = mongoose.models.Post || mongoose.model<IPost>('Post', postSchema);

@@ -1,92 +1,138 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { UserPlus, User } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button"; // Adjust your UI import as needed
+import { UserPlus } from "lucide-react"; // Import the icon
+import io from "socket.io-client"; // (If used elsewhere in your code)
 
 interface UserData {
-  id: number
-  name: string
-  username: string
-  avatar: string
+  _id: string;
+  username: string;
 }
 
-const mockUsers: UserData[] = [
-  { id: 1, name: "Alice Johnson", username: "@alice", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 2, name: "Bob Smith", username: "@bobsmith", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 3, name: "Charlie Brown", username: "@charlieb", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 4, name: "Diana Prince", username: "@wonderwoman", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 5, name: "Ethan Hunt", username: "@mission_possible", avatar: "/placeholder.svg?height=40&width=40" },
-]
+interface LoggedInUser {
+  _id: string;
+  username: string;
+  // any other properties
+  users?: UserData[]; // Assuming your API returns an array of users in "users"
+}
 
 export default function UserList() {
-  const [users] = useState<UserData[]>(mockUsers)
+  const [userProfile, setUserProfile] = useState<LoggedInUser | null>(null);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loggedInUser, setLoggedInUser] = useState<LoggedInUser | null>(null);
+  const [userId, setUserId] = useState<string>("");
+  const router = useRouter();
 
-  const handleFollow = (userId: number) => {
-    console.log(`Following user with id: ${userId}`)
-    // In a real application, this would send a request to follow the user
-  }
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const res = await fetch("/api/auth/user");
+        const data: LoggedInUser = await res.json();
+        if (data) {
+          setLoggedInUser(data);
+          setUserId(data._id);
+          setUsers(data.users || []); // Ensure users is an array
+          setUserProfile(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    }
+    fetchUserData();
+  }, []);
 
-  const handleViewProfile = (userId: number) => {
-    // In a real application, this would navigate to the user's profile page
-    console.log(`Viewing profile of user with id: ${userId}`)
-  }
+  const handleFollow = async (targetUserId: string) => {
+    if (!userProfile) {
+      console.error("Logged in user not loaded yet");
+      return;
+    }
+    try {
+      const response = await fetch("/api/follow", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          followerId: userProfile._id,
+          followingId: targetUserId,
+        }),
+      });
+
+      if (response.ok) {
+        console.log(`Successfully followed user with id: ${targetUserId}`);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to follow user:", errorData);
+      }
+    } catch (error) {
+      console.error("Error following user:", error);
+    }
+  };
+
+  const handleViewProfile = (targetUserId: string) => {
+    router.push(`/profileOther/${targetUserId}`);
+  };
+
+  // Handle the video call initiation
+  const handleVideoCall = (targetUserId: string) => {
+    if (!userId) {
+      console.error("User ID not available.");
+      return;
+    }
+    // Generate a unique roomID for the video call (e.g., a combination of caller and target user IDs)
+
+    router.push(`/room`);
+  };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-sm">
-        <CardHeader className="border-b border-gray-200">
-          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#10A881] to-[#7CEC9F]">
-            Users You May Know
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[400px] pr-4">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between mb-4 last:mb-0 p-3 rounded-lg hover:bg-gradient-to-r hover:from-[#E8FFF7] hover:to-[#F0FFF9] transition-all duration-300"
-              >
-                <div className="flex items-center">
-                  <Avatar className="h-10 w-10 ring-2 ring-[#53E0BC]">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-[#10A881] to-[#1BCA9B] text-white">
-                      {user.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                    <p className="text-xs text-[#218F76]">{user.username}</p>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    className="bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
-                    size="sm"
-                    onClick={() => handleFollow(user.id)}
-                  >
-                    <UserPlus className="h-4 w-4 mr-1" />
-                    Follow
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#53E0BC] text-[#10A881] hover:bg-[#E8FFF7] hover:text-[#1BCA9B] transition-all duration-300"
-                    onClick={() => handleViewProfile(user.id)}
-                  >
-                    <User className="h-4 w-4 mr-1" />
-                    Profile
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </ScrollArea>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen p-4">
+      <h2 className="text-2xl font-bold mb-4">Users You May Know</h2>
+      {users.map((user) => (
+        <div
+          key={user._id}
+          className="flex items-center justify-between p-3 mb-3 border rounded"
+        >
+          <div>
+            <p className="font-medium">{user.username}</p>
+          </div>
+          <Button onClick={() => handleVideoCall(user._id)}>Video Call</Button>
+          <Button
+            className="bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
+            size="sm"
+            onClick={() => handleFollow(user._id)}
+          >
+            <UserPlus className="h-4 w-4 mr-1" />
+            Follow
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[#53E0BC] text-[#10A881] hover:bg-[#E8FFF7] hover:text-[#1BCA9B] transition-all duration-300"
+            onClick={() => handleViewProfile(user._id)}
+          >
+            <UserPlus className="h-4 w-4 mr-1" />
+            Profile
+          </Button>
+          <Link href={`/chat/${user._id}`}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-[#53E0BC] text-[#10A881] hover:bg-[#E8FFF7] hover:text-[#1BCA9B] transition-all duration-300"
+            >
+              Message
+            </Button>
+          </Link>
+          <div className="flex gap-2">
+  <Link href="/create-group">
+    <Button variant="outline">
+      Create Group
+    </Button>
+  </Link>
+  {/* Existing buttons */}
+</div>
+        </div>
+      ))}
     </div>
-  )
+  );
 }
-
