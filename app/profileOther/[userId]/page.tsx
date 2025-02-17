@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function OtherUserProfile() {
   const { userId } = useParams();
@@ -132,6 +133,11 @@ export default function OtherUserProfile() {
               )}
             </div>
           </div>
+          <div className="mt-8">
+              <Link href="/dashboard" passHref>
+                <Button variant="outline">Back to Dashboard</Button>
+              </Link>
+            </div>
         </CardContent>
       </Card>
     </div>

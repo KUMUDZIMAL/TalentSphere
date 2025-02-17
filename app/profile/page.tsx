@@ -101,7 +101,7 @@ export default function ProfilePage() {
 
             {/* Back to Dashboard */}
             <div className="mt-8">
-              <Link href="/" passHref>
+              <Link href="/dashboard" passHref>
                 <Button variant="outline">Back to Dashboard</Button>
               </Link>
             </div>

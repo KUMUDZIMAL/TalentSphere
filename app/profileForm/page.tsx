@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { X } from "lucide-react";
+import { useRouter } from 'next/navigation'; // Use 'next/router' if using an older version
 
 const professions = [
   "Actor",
@@ -27,6 +28,7 @@ const professions = [
   "Music Composer",
   "Photographer",
 ];
+
 
 interface Experience {
   title: string;
@@ -47,6 +49,7 @@ export default function ProfileForm() {
     experiences: [],
     about: "",
   });
+  const router = useRouter();
   const [newSkill, setNewSkill] = useState("");
   const [newExperience, setNewExperience] = useState<Experience>({ title: "", description: "" });
   const [userId, setUserId] = useState<string | null>(null);
@@ -269,11 +272,18 @@ export default function ProfileForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button
+            <Button   onClick={() => router.push('/dashboard')}
               type="submit"
               className="w-full bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
             >
               Submit Profile Information
+            </Button>
+            <Button
+            onClick={() => router.push('/dashboard')}
+           
+              className="w-full bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
+            >
+              Skip
             </Button>
           </CardFooter>
         </form>

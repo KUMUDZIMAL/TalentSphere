@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRouter } from 'next/navigation';
+
+
 
 const interests = [
   "Acting",
@@ -31,6 +34,7 @@ const interests = [
 ];
 
 export default function InterestsForm() {
+  const router = useRouter();
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null); // Allow userId to be null initially
 
@@ -113,9 +117,17 @@ export default function InterestsForm() {
           <CardFooter>
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
+              className="w-full bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300" onClick={() => router.push('/dashboard')}
             >
               Submit
+            </Button>
+
+            <Button
+            onClick={() => router.push('/dashboard')}
+           
+              className="w-full bg-gradient-to-r from-[#10A881] to-[#1BCA9B] text-white font-semibold hover:from-[#1BCA9B] hover:to-[#53E0BC] transition-all duration-300"
+            >
+              Skip
             </Button>
           </CardFooter>
         </form>
