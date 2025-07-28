@@ -1,15 +1,21 @@
 "use client";
+
 import React from "react";
 import ChatApp from "@/myComponents/ChatApp";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 const ChatPage: React.FC = () => {
   const params = useParams();
-  // Ensure receiverId is a string
+  const searchParams = useSearchParams();
+
+  // 1) Extract receiverId from the dynamic route
   let receiverId = params.receiverId;
   if (Array.isArray(receiverId)) {
     receiverId = receiverId[0];
   }
+
+  // 2) Extract sharedPostId from query string (if any)
+  const sharedPostId = searchParams.get("postId") || undefined;
 
   if (!receiverId) {
     return <p>Loading...</p>;
@@ -18,7 +24,8 @@ const ChatPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">TalentSphere Chat</h1>
-      <ChatApp receiverId={receiverId} />
+      {/* Now pass sharedPostId as an optional prop */}
+      <ChatApp receiverId={receiverId} sharedPostId={sharedPostId} />
     </div>
   );
 };

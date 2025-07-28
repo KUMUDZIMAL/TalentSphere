@@ -28,9 +28,21 @@ interface BoardData {
 
 const initialData: BoardData = {
   tasks: {
-    "task-1": { id: "task-1", content: "Write script outline", deadline: "2025-02-20" },
-    "task-2": { id: "task-2", content: "Cast audition schedule", deadline: "2025-02-25" },
-    "task-3": { id: "task-3", content: "Scout locations", deadline: "2025-03-01" },
+    "task-1": {
+      id: "task-1",
+      content: "Write script outline",
+      deadline: "2025-02-20",
+    },
+    "task-2": {
+      id: "task-2",
+      content: "Cast audition schedule",
+      deadline: "2025-02-25",
+    },
+    "task-3": {
+      id: "task-3",
+      content: "Scout locations",
+      deadline: "2025-03-01",
+    },
   },
   columns: {
     "column-1": {
@@ -59,6 +71,8 @@ export const ProjectBoard: React.FC = () => {
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
+    console.log("Drag ended:", result);
+
     if (!destination) return;
     if (
       destination.droppableId === source.droppableId &&
@@ -66,37 +80,40 @@ export const ProjectBoard: React.FC = () => {
     )
       return;
 
-    const start = boardData.columns[source.droppableId];
-    const finish = boardData.columns[destination.droppableId];
+    setBoardData((prevData) => {
+      const start = prevData.columns[source.droppableId];
+      const finish = prevData.columns[destination.droppableId];
 
-    if (start === finish) {
-      const newTaskIds = Array.from(start.taskIds);
-      newTaskIds.splice(source.index, 1);
-      newTaskIds.splice(destination.index, 0, draggableId);
-      const newColumn = { ...start, taskIds: newTaskIds };
-      setBoardData({
-        ...boardData,
-        columns: { ...boardData.columns, [newColumn.id]: newColumn },
-      });
-      return;
-    }
+      // Moving within the same column
+      if (start === finish) {
+        const newTaskIds = Array.from(start.taskIds);
+        newTaskIds.splice(source.index, 1);
+        newTaskIds.splice(destination.index, 0, draggableId);
+        const newColumn = { ...start, taskIds: newTaskIds };
 
-    // Moving between columns
-    const startTaskIds = Array.from(start.taskIds);
-    startTaskIds.splice(source.index, 1);
-    const newStart = { ...start, taskIds: startTaskIds };
+        return {
+          ...prevData,
+          columns: { ...prevData.columns, [newColumn.id]: newColumn },
+        };
+      }
 
-    const finishTaskIds = Array.from(finish.taskIds);
-    finishTaskIds.splice(destination.index, 0, draggableId);
-    const newFinish = { ...finish, taskIds: finishTaskIds };
+      // Moving between columns
+      const startTaskIds = Array.from(start.taskIds);
+      startTaskIds.splice(source.index, 1);
+      const newStart = { ...start, taskIds: startTaskIds };
 
-    setBoardData({
-      ...boardData,
-      columns: {
-        ...boardData.columns,
-        [newStart.id]: newStart,
-        [newFinish.id]: newFinish,
-      },
+      const finishTaskIds = Array.from(finish.taskIds);
+      finishTaskIds.splice(destination.index, 0, draggableId);
+      const newFinish = { ...finish, taskIds: finishTaskIds };
+
+      return {
+        ...prevData,
+        columns: {
+          ...prevData.columns,
+          [newStart.id]: newStart,
+          [newFinish.id]: newFinish,
+        },
+      };
     });
   };
 
@@ -135,7 +152,9 @@ export const ProjectBoard: React.FC = () => {
 
     const updatedColumn = {
       ...boardData.columns[columnId],
-      taskIds: boardData.columns[columnId].taskIds.filter(id => id !== taskId),
+      taskIds: boardData.columns[columnId].taskIds.filter(
+        (id) => id !== taskId
+      ),
     };
 
     setBoardData({
@@ -167,11 +186,26 @@ export const ProjectBoard: React.FC = () => {
         <button onClick={addTask}>Add Task</button>
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{ display: "flex", justifyContent: "center", height: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            height: "100%",
+          }}
+        >
           {boardData.columnOrder.map((columnId) => {
             const column = boardData.columns[columnId];
-            const tasks = column.taskIds.map((taskId) => boardData.tasks[taskId]);
-            return <Column key={column.id} column={column} tasks={tasks} deleteTask={deleteTask} />;
+            const tasks = column.taskIds.map(
+              (taskId) => boardData.tasks[taskId]
+            );
+            return (
+              <Column
+                key={column.id}
+                column={column}
+                tasks={tasks}
+                deleteTask={deleteTask}
+              />
+            );
           })}
         </div>
       </DragDropContext>
@@ -198,9 +232,11 @@ const Column: React.FC<ColumnProps> = ({ column, tasks, deleteTask }) => (
     }}
   >
     <h3 style={{ padding: 8 }}>{column.title}</h3>
-
- 
-    <Droppable droppableId={column.id}>
+    <Droppable
+      droppableId={column.id}
+      isDropDisabled={false}
+      isCombineEnabled={false} // Explicitly set isCombineEnabled to false
+    >
       {(provided) => (
         <div
           ref={provided.innerRef}
@@ -208,7 +244,7 @@ const Column: React.FC<ColumnProps> = ({ column, tasks, deleteTask }) => (
           style={{
             padding: 8,
             flexGrow: 1,
-            minHeight: 100,
+            minHeight: 150, // increased minHeight for empty columns
           }}
         >
           {tasks.map((task, index) => (
@@ -262,3 +298,5 @@ const Column: React.FC<ColumnProps> = ({ column, tasks, deleteTask }) => (
     </Droppable>
   </div>
 );
+
+export default ProjectBoard;

@@ -1,9 +1,7 @@
-// app/models/UserProfile.ts
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {
   userId: mongoose.Types.ObjectId;
-  
   profilePicture?: string;
   posts: mongoose.Types.ObjectId[];
   followers: mongoose.Types.ObjectId[];
@@ -23,14 +21,13 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-   
     profilePicture: { type: String, default: "" },
     posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    interests: [{ type: String, trim: true }],
-    professions: [{ type: String, trim: true }],
-    skills: [{ type: String, trim: true }],
+    interests: { type: [String], default: [] }, // Ensures interests is always an array
+    professions: { type: [String], default: [] },
+    skills: { type: [String], default: [] },
     experiences: [
       {
         title: { type: String, required: true },

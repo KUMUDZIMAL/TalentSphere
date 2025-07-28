@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 // Import your models
 import Post from '@/models/Post';
 import User from '@/models/User';
+import { moderateContent } from '@/lib/moderation';
 
 // MongoDB Connection
 if (!mongoose.connection.readyState) {
@@ -30,6 +31,15 @@ export async function POST(request: NextRequest) {
     const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Moderate post content
+    const moderation = moderateContent(content);
+    if (moderation.isFlagged) {
+      return NextResponse.json({
+        error: 'Content flagged by moderation.',
+        reasons: moderation.reasons,
+      }, { status: 403 });
     }
 
     // Handle file uploads
