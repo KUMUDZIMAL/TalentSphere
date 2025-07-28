@@ -2,7 +2,7 @@ require('dotenv').config();
 import { NextRequest, NextResponse } from 'next/server';
 import { getRelevantChunks } from '@/lib/ragUtils';
 
-const GROQ_API_KEY = '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'
+const GROQ_API_KEY = process.env.GROQ_API_KEY ;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama3-70b-8192';
 console.log("GROQ_API_KEY:", GROQ_API_KEY);
